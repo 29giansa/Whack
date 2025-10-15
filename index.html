@@ -114,18 +114,18 @@
                     align="center">
             </a-text>
             
-            <!-- Start button - using a sphere that should definitely be visible -->
+            <!-- Start button - green sphere positioned above the ground -->
             <a-sphere id="startButton"
-                      position="0 -0.8 -3" 
-                      radius="0.5"
-                      color="red"
+                      position="0 -0.3 -3.5" 
+                      radius="0.4"
+                      color="green"
                       class="clickable">
             </a-sphere>
             
-            <a-text value="CLICK RED BALL TO START" 
-                    position="0 -1.5 -4" 
+            <a-text value="CLICK GREEN BALL TO START" 
+                    position="0 -0.8 -4" 
                     color="yellow" 
-                    scale="2 2 2"
+                    scale="1.8 1.8 1.8"
                     align="center">
             </a-text>
             
@@ -238,7 +238,7 @@
 
         // Start button click handler
         startButton.addEventListener('click', function() {
-            console.log('Red ball clicked!');
+            console.log('Green ball clicked!');
             if (gameStarted) return;
             
             gameStarted = true;

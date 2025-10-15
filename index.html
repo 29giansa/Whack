@@ -64,20 +64,88 @@
                 value="Score: 0" 
                 position="-1 3 -4" 
                 color="white" 
-                scale="2 2 2">
+                scale="2 2 2"
+                visible="false">
         </a-text>
 
-        <!-- Game instructions -->
-        <a-text value="Look at moles and click to hit them!" 
-                position="-2 2.5 -4" 
-                color="yellow" 
-                scale="1 1 1">
-        </a-text>
+        <!-- Instructions Screen -->
+        <a-entity id="instructionsScreen">
+            <!-- Title -->
+            <a-text value="VR WHACK-A-MOLE" 
+                    position="0 3 -4" 
+                    color="yellow" 
+                    scale="3 3 3"
+                    align="center">
+            </a-text>
+            
+            <!-- Instructions -->
+            <a-text value="HOW TO PLAY:" 
+                    position="0 2 -4" 
+                    color="white" 
+                    scale="1.5 1.5 1.5"
+                    align="center">
+            </a-text>
+            
+            <a-text value="• Moles will pop up from holes" 
+                    position="0 1.4 -4" 
+                    color="white" 
+                    scale="1.2 1.2 1.2"
+                    align="center">
+            </a-text>
+            
+            <a-text value="• Look at a mole and CLICK to hit it" 
+                    position="0 1 -4" 
+                    color="white" 
+                    scale="1.2 1.2 1.2"
+                    align="center">
+            </a-text>
+            
+            <a-text value="• Hit moles quickly before they hide!" 
+                    position="0 0.6 -4" 
+                    color="white" 
+                    scale="1.2 1.2 1.2"
+                    align="center">
+            </a-text>
+            
+            <a-text value="• Each hit = 10 points" 
+                    position="0 0.2 -4" 
+                    color="white" 
+                    scale="1.2 1.2 1.2"
+                    align="center">
+            </a-text>
+            
+            <!-- Start button -->
+            <a-box id="startButton"
+                   position="0 -0.5 -4" 
+                   width="3" 
+                   height="0.8" 
+                   depth="0.1"
+                   color="#4CAF50"
+                   class="clickable">
+            </a-box>
+            
+            <a-text value="CLICK TO START" 
+                    position="0 -0.5 -3.95" 
+                    color="white" 
+                    scale="1.5 1.5 1.5"
+                    align="center">
+            </a-text>
+            
+            <!-- Countdown display (hidden initially) -->
+            <a-text id="countdown" 
+                    value="3" 
+                    position="0 1.5 -4" 
+                    color="red" 
+                    scale="5 5 5"
+                    align="center"
+                    visible="false">
+            </a-text>
+        </a-entity>
 
         <!-- Camera with cursor -->
         <a-camera position="0 1.6 0">
             <a-cursor color="red" 
-                     raycaster="objects: .mole"
+                     raycaster="objects: .mole, .clickable"
                      geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03">
             </a-cursor>
         </a-camera>
@@ -85,9 +153,13 @@
 
     <script>
         let score = 0;
-        let gameActive = true;
+        let gameActive = false; // Start as false
+        let gameStarted = false;
         const moles = document.querySelectorAll('.mole');
         const scoreDisplay = document.getElementById('score');
+        const instructionsScreen = document.getElementById('instructionsScreen');
+        const startButton = document.getElementById('startButton');
+        const countdown = document.getElementById('countdown');
         let activeMoles = new Set();
 
         // Function to show a mole
@@ -100,12 +172,10 @@
             const currentPos = mole.getAttribute('position');
             const upPosition = `${currentPos.x} 0.5 ${currentPos.z}`;
             
-            console.log(`Showing mole at position: ${upPosition}`);
-            
             // Move mole up using direct position change
             mole.setAttribute('position', upPosition);
             
-            // Hide mole after 1.2 seconds (faster!)
+            // Hide mole after 1.2 seconds
             setTimeout(() => {
                 hideMole(mole);
             }, 1200);
@@ -119,8 +189,6 @@
             const currentPos = mole.getAttribute('position');
             const downPosition = `${currentPos.x} -1 ${currentPos.z}`;
             
-            console.log(`Hiding mole to position: ${downPosition}`);
-            
             // Move mole down
             mole.setAttribute('position', downPosition);
             
@@ -128,7 +196,7 @@
             activeMoles.delete(mole);
         }
 
-        // Function to show random moles (can show multiple at once)
+        // Function to show random moles
         function showRandomMoles() {
             if (!gameActive) return;
             
@@ -143,10 +211,42 @@
             const molesToShow = shuffled.slice(0, Math.min(numberOfMoles, inactiveMoles.length));
             
             molesToShow.forEach(mole => {
-                console.log(`Selected mole: ${mole.id}`);
                 showMole(mole);
             });
         }
+
+        // Function to start countdown
+        function startCountdown() {
+            let count = 3;
+            countdown.setAttribute('visible', true);
+            
+            const countdownInterval = setInterval(() => {
+                countdown.setAttribute('value', count.toString());
+                count--;
+                
+                if (count < 0) {
+                    clearInterval(countdownInterval);
+                    countdown.setAttribute('visible', false);
+                    startGame();
+                }
+            }, 1000);
+        }
+
+        // Function to hide instructions and show game UI
+        function hideInstructions() {
+            instructionsScreen.setAttribute('visible', false);
+            scoreDisplay.setAttribute('visible', true);
+        }
+
+        // Start button click handler
+        startButton.addEventListener('click', function() {
+            if (gameStarted) return;
+            
+            gameStarted = true;
+            console.log('Start button clicked!');
+            hideInstructions();
+            startCountdown();
+        });
 
         // Add click listeners to moles
         moles.forEach(mole => {
@@ -173,19 +273,20 @@
         // Start the game
         function startGame() {
             console.log('Game started!');
+            gameActive = true;
+            
             const gameInterval = setInterval(() => {
                 if (!gameActive) {
                     clearInterval(gameInterval);
                     return;
                 }
                 showRandomMoles();
-            }, 800); // Much faster - every 0.8 seconds!
+            }, 800);
         }
 
-        // Start game after scene loads
+        // Scene loaded event
         document.querySelector('a-scene').addEventListener('loaded', () => {
-            console.log('Scene loaded, starting game in 1 second...');
-            setTimeout(startGame, 1000);
+            console.log('Scene loaded, showing instructions...');
         });
     </script>
 </body>

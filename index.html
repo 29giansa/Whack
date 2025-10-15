@@ -114,14 +114,19 @@
                     align="center">
             </a-text>
             
-            <!-- Simple start button using just text -->
-            <a-text id="startButton"
-                    value=">>> CLICK HERE TO START <<<" 
-                    position="0 -0.5 -4" 
-                    color="lime" 
+            <!-- Start button - using a sphere that should definitely be visible -->
+            <a-sphere id="startButton"
+                      position="0 -0.8 -3" 
+                      radius="0.5"
+                      color="red"
+                      class="clickable">
+            </a-sphere>
+            
+            <a-text value="CLICK RED BALL TO START" 
+                    position="0 -1.5 -4" 
+                    color="yellow" 
                     scale="2 2 2"
-                    align="center"
-                    class="clickable">
+                    align="center">
             </a-text>
             
             <!-- Countdown display (hidden initially) -->
@@ -137,7 +142,7 @@
 
         <!-- Camera with cursor -->
         <a-camera position="0 1.6 0">
-            <a-cursor color="red" 
+            <a-cursor color="white" 
                      raycaster="objects: .mole, .clickable"
                      geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03">
             </a-cursor>
@@ -233,10 +238,10 @@
 
         // Start button click handler
         startButton.addEventListener('click', function() {
+            console.log('Red ball clicked!');
             if (gameStarted) return;
             
             gameStarted = true;
-            console.log('Start button clicked!');
             hideInstructions();
             startCountdown();
         });

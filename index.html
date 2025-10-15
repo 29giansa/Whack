@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <title>VR Whack-a-Mole Game</title>
+</head>
+<body>
+    <a-scene background="color: #87CEEB">
+        <!-- Ground -->
+        <a-plane position="0 0 -4" 
+                 rotation="-90 0 0" 
+                 width="10" 
+                 height="10" 
+                 color="green">
+        </a-plane>
+
+        <!-- Holes in the ground -->
+        <a-cylinder position="-2 0.01 -3" 
+                    radius="0.6" 
+                    height="0.02" 
+                    color="black">
+        </a-cylinder>
+        
+        <a-cylinder position="0 0.01 -3" 
+                    radius="0.6" 
+                    height="0.02" 
+                    color="black">
+        </a-cylinder>
+        
+        <a-cylinder position="2 0.01 -3" 
+                    radius="0.6" 
+                    height="0.02" 
+                    color="black">
+        </a-cylinder>
+
+        <!-- Moles (start hidden underground) -->
+        <a-box id="mole1" 
+               position="-2 -1 -3" 
+               width="0.8" 
+               height="0.8" 
+               depth="0.8"
+               color="brown" 
+               class="mole">
+        </a-box>
+        
+        <a-sphere id="mole2" 
+                  position="0 -1 -3" 
+                  radius="0.4"
+                  color="gray" 
+                  class="mole">
+        </a-sphere>
+        
+        <a-box id="mole3" 
+               position="2 -1 -3" 
+               width="0.8" 
+               height="0.8" 
+               depth="0.8"
+               color="brown" 
+               class="mole">
+        </a-box>
+
+        <!-- Score display -->
+        <a-text id="score" 
+                value="Score: 0" 
+                position="-1 3 -4" 
+                color="white" 
+                scale="2 2 2">
+        </a-text>
+
+        <!-- Game instructions -->
+        <a-text value="Look at moles and click to hit them!" 
+                position="-2 2.5 -4" 
+                color="yellow" 
+                scale="1 1 1">
+        </a-text>
+
+        <!-- Camera with cursor -->
+        <a-camera position="0 1.6 0">
+            <a-cursor color="red" 
+                     raycaster="objects: .mole"
+                     geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03">
+            </a-cursor>
+        </a-camera>
+    </a-scene>
+
+    <script>
+        let score = 0;
+        let gameActive = true;
+        const moles = document.querySelectorAll('.mole');
+        const scoreDisplay = document.getElementById('score');
+        let activeMoles = new Set();
+
+        // Function to show a mole
+        function showMole(mole) {
+            if (activeMoles.has(mole)) return;
+            
+            activeMoles.add(mole);
+            
+            // Get current position
+            const currentPos = mole.getAttribute('position');
+            const upPosition = `${currentPos.x} 0.5 ${currentPos.z}`;
+            
+            console.log(`Showing mole at position: ${upPosition}`);
+            
+            // Move mole up using direct position change
+            mole.setAttribute('position', upPosition);
+            
+            // Hide mole after 1.2 seconds (faster!)
+            setTimeout(() => {
+                hideMole(mole);
+            }, 1200);
+        }
+
+        // Function to hide a mole
+        function hideMole(mole) {
+            if (!activeMoles.has(mole)) return;
+            
+            // Get current position and move back down
+            const currentPos = mole.getAttribute('position');
+            const downPosition = `${currentPos.x} -1 ${currentPos.z}`;
+            
+            console.log(`Hiding mole to position: ${downPosition}`);
+            
+            // Move mole down
+            mole.setAttribute('position', downPosition);
+            
+            // Remove from active set
+            activeMoles.delete(mole);
+        }
+
+        // Function to show random moles (can show multiple at once)
+        function showRandomMoles() {
+            if (!gameActive) return;
+            
+            const inactiveMoles = Array.from(moles).filter(mole => !activeMoles.has(mole));
+            if (inactiveMoles.length === 0) return;
+            
+            // Randomly decide how many moles to show (1-2 moles)
+            const numberOfMoles = Math.random() > 0.6 ? 2 : 1;
+            
+            // Shuffle the inactive moles and take the first few
+            const shuffled = inactiveMoles.sort(() => 0.5 - Math.random());
+            const molesToShow = shuffled.slice(0, Math.min(numberOfMoles, inactiveMoles.length));
+            
+            molesToShow.forEach(mole => {
+                console.log(`Selected mole: ${mole.id}`);
+                showMole(mole);
+            });
+        }
+
+        // Add click listeners to moles
+        moles.forEach(mole => {
+            mole.addEventListener('click', function() {
+                if (!activeMoles.has(this)) return;
+                
+                console.log(`Mole ${this.id} was clicked!`);
+                score += 10;
+                scoreDisplay.setAttribute('value', `Score: ${score}`);
+                
+                // Flash effect when hit
+                const originalColor = this.getAttribute('color');
+                this.setAttribute('color', 'red');
+                
+                setTimeout(() => {
+                    this.setAttribute('color', originalColor);
+                }, 200);
+                
+                // Hide the mole immediately when hit
+                hideMole(this);
+            });
+        });
+
+        // Start the game
+        function startGame() {
+            console.log('Game started!');
+            const gameInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(gameInterval);
+                    return;
+                }
+                showRandomMoles();
+            }, 800); // Much faster - every 0.8 seconds!
+        }
+
+        // Start game after scene loads
+        document.querySelector('a-scene').addEventListener('loaded', () => {
+            console.log('Scene loaded, starting game in 1 second...');
+            setTimeout(startGame, 1000);
+        });
+    </script>
+</body>
+</html>

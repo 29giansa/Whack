@@ -61,8 +61,8 @@
 
         <!-- Score display -->
         <a-text id="score" 
-                value="Score: 0" 
-                position="-1 3 -4" 
+                value="Score: 0 / 200" 
+                position="-1.5 3 -4" 
                 color="white" 
                 scale="2 2 2"
                 visible="false">
@@ -70,7 +70,7 @@
 
         <!-- Instructions Screen -->
         <a-entity id="instructionsScreen">
-            <!-- Title - moved up and made smaller -->
+            <!-- Title -->
             <a-text value="VR WHACK-A-MOLE" 
                     position="0 3.5 -4" 
                     color="yellow" 
@@ -78,7 +78,7 @@
                     align="center">
             </a-text>
             
-            <!-- Instructions - moved up and made smaller -->
+            <!-- Instructions -->
             <a-text value="HOW TO PLAY:" 
                     position="0 2.8 -4" 
                     color="white" 
@@ -114,7 +114,14 @@
                     align="center">
             </a-text>
             
-            <!-- Start button - now has more space below instructions -->
+            <a-text value="• Reach 200 points to WIN!" 
+                    position="0 1.2 -4" 
+                    color="lime" 
+                    scale="1.1 1.1 1.1"
+                    align="center">
+            </a-text>
+            
+            <!-- Start button -->
             <a-sphere id="startButton"
                       position="0 0.8 -2.5" 
                       radius="0.25"
@@ -140,6 +147,38 @@
             </a-text>
         </a-entity>
 
+        <!-- Win Screen (hidden initially) -->
+        <a-entity id="winScreen" visible="false">
+            <a-text value="YOU WIN!" 
+                    position="0 2.5 -4" 
+                    color="gold" 
+                    scale="4 4 4"
+                    align="center">
+            </a-text>
+            
+            <a-text value="Congratulations!" 
+                    position="0 1.8 -4" 
+                    color="yellow" 
+                    scale="2 2 2"
+                    align="center">
+            </a-text>
+            
+            <a-text value="You reached 200 points!" 
+                    position="0 1.3 -4" 
+                    color="white" 
+                    scale="1.5 1.5 1.5"
+                    align="center">
+            </a-text>
+            
+            <a-text id="finalScore"
+                    value="Final Score: 200" 
+                    position="0 0.8 -4" 
+                    color="lime" 
+                    scale="1.8 1.8 1.8"
+                    align="center">
+            </a-text>
+        </a-entity>
+
         <!-- Camera with cursor -->
         <a-camera position="0 1.6 0">
             <a-cursor color="white" 
@@ -153,16 +192,45 @@
         let score = 0;
         let gameActive = false;
         let gameStarted = false;
+        let gameWon = false;
+        let gameInterval;
+        const WIN_SCORE = 200;
+        
         const moles = document.querySelectorAll('.mole');
         const scoreDisplay = document.getElementById('score');
         const instructionsScreen = document.getElementById('instructionsScreen');
         const startButton = document.getElementById('startButton');
         const countdown = document.getElementById('countdown');
+        const winScreen = document.getElementById('winScreen');
+        const finalScore = document.getElementById('finalScore');
         let activeMoles = new Set();
+
+        // Function to update score display
+        function updateScore() {
+            scoreDisplay.setAttribute('value', `Score: ${score} / ${WIN_SCORE}`);
+        }
+
+        // Function to show win screen
+        function showWinScreen() {
+            gameActive = false;
+            gameWon = true;
+            clearInterval(gameInterval);
+            
+            // Hide all active moles
+            activeMoles.forEach(mole => {
+                hideMole(mole);
+            });
+            
+            finalScore.setAttribute('value', `Final Score: ${score}`);
+            winScreen.setAttribute('visible', true);
+            scoreDisplay.setAttribute('visible', false);
+            
+            console.log('Player won the game!');
+        }
 
         // Function to show a mole
         function showMole(mole) {
-            if (activeMoles.has(mole)) return;
+            if (activeMoles.has(mole) || !gameActive || gameWon) return;
             
             activeMoles.add(mole);
             
@@ -196,7 +264,7 @@
 
         // Function to show random moles
         function showRandomMoles() {
-            if (!gameActive) return;
+            if (!gameActive || gameWon) return;
             
             const inactiveMoles = Array.from(moles).filter(mole => !activeMoles.has(mole));
             if (inactiveMoles.length === 0) return;
@@ -234,6 +302,7 @@
         function hideInstructions() {
             instructionsScreen.setAttribute('visible', false);
             scoreDisplay.setAttribute('visible', true);
+            updateScore();
         }
 
         // Start button click handler
@@ -246,28 +315,68 @@
             startCountdown();
         });
 
-        // Add click listeners to moles
-        moles.forEach(mole => {
-            mole.addEventListener('click', function() {
-                if (!activeMoles.has(this)) return;
-                
-                console.log(`Mole ${this.id} was clicked!`);
-                score += 10;
-                scoreDisplay.setAttribute('value', `Score: ${score}`);
-                
-                // Flash effect when hit - works for both material and color attributes
-                const material = this.getAttribute('material');
-                const originalColor = material.color;
-                
-                this.setAttribute('material', 'color', 'red');
-                
-                setTimeout(() => {
-                    this.setAttribute('material', 'color', originalColor);
-                }, 200);
-                
-                // Hide the mole immediately when hit
-                hideMole(this);
-            });
+        // Add click listeners to each mole individually
+        document.getElementById('mole1').addEventListener('click', function() {
+            if (!activeMoles.has(this) || gameWon) return;
+            
+            score += 10;
+            updateScore();
+            console.log(`Score increased to: ${score}`);
+            
+            // Flash effect
+            this.setAttribute('material', 'color', 'red');
+            setTimeout(() => {
+                this.setAttribute('material', 'color', 'brown');
+            }, 200);
+            
+            hideMole(this);
+            
+            // Check for win condition
+            if (score >= WIN_SCORE) {
+                showWinScreen();
+            }
+        });
+
+        document.getElementById('mole2').addEventListener('click', function() {
+            if (!activeMoles.has(this) || gameWon) return;
+            
+            score += 10;
+            updateScore();
+            console.log(`Score increased to: ${score}`);
+            
+            // Flash effect
+            this.setAttribute('material', 'color', 'red');
+            setTimeout(() => {
+                this.setAttribute('material', 'color', 'gray');
+            }, 200);
+            
+            hideMole(this);
+            
+            // Check for win condition
+            if (score >= WIN_SCORE) {
+                showWinScreen();
+            }
+        });
+
+        document.getElementById('mole3').addEventListener('click', function() {
+            if (!activeMoles.has(this) || gameWon) return;
+            
+            score += 10;
+            updateScore();
+            console.log(`Score increased to: ${score}`);
+            
+            // Flash effect
+            this.setAttribute('material', 'color', 'red');
+            setTimeout(() => {
+                this.setAttribute('material', 'color', 'brown');
+            }, 200);
+            
+            hideMole(this);
+            
+            // Check for win condition
+            if (score >= WIN_SCORE) {
+                showWinScreen();
+            }
         });
 
         // Start the game
@@ -275,8 +384,8 @@
             console.log('Game started!');
             gameActive = true;
             
-            const gameInterval = setInterval(() => {
-                if (!gameActive) {
+            gameInterval = setInterval(() => {
+                if (!gameActive || gameWon) {
                     clearInterval(gameInterval);
                     return;
                 }

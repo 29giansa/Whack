@@ -39,14 +39,14 @@
                width="0.8" 
                height="0.8" 
                depth="0.8"
-               color="brown" 
+               material="color: brown"
                class="mole">
         </a-box>
         
         <a-sphere id="mole2" 
                   position="0 -1 -3" 
                   radius="0.4"
-                  color="gray" 
+                  material="color: gray"
                   class="mole">
         </a-sphere>
         
@@ -55,7 +55,7 @@
                width="0.8" 
                height="0.8" 
                depth="0.8"
-               color="brown" 
+               material="color: brown"
                class="mole">
         </a-box>
 
@@ -255,12 +255,14 @@
                 score += 10;
                 scoreDisplay.setAttribute('value', `Score: ${score}`);
                 
-                // Flash effect when hit
-                const originalColor = this.getAttribute('color');
-                this.setAttribute('color', 'red');
+                // Flash effect when hit - works for both material and color attributes
+                const material = this.getAttribute('material');
+                const originalColor = material.color;
+                
+                this.setAttribute('material', 'color', 'red');
                 
                 setTimeout(() => {
-                    this.setAttribute('color', originalColor);
+                    this.setAttribute('material', 'color', originalColor);
                 }, 200);
                 
                 // Hide the mole immediately when hit

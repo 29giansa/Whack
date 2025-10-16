@@ -46,7 +46,7 @@
         <a-sphere id="mole2" 
                   position="0 -1 -3" 
                   radius="0.4"
-                  material="color: gray"
+                  material="color: blue"
                   class="mole">
         </a-sphere>
         
@@ -345,9 +345,9 @@
             console.log(`Score increased to: ${score}`);
             
             // Flash effect
-            this.setAttribute('material', 'color', 'red');
+            this.setAttribute('material', 'color', 'green');
             setTimeout(() => {
-                this.setAttribute('material', 'color', 'gray');
+                this.setAttribute('material', 'color', 'blue');
             }, 200);
             
             hideMole(this);
@@ -400,6 +400,7 @@
     </script>
 </body>
 </html>
+
 
 
 

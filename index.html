@@ -55,7 +55,7 @@
                width="0.8" 
                height="0.8" 
                depth="0.8"
-               material="color: brown"
+               material="color: yellow"
                class="mole">
         </a-box>
 
@@ -366,9 +366,9 @@
             console.log(`Score increased to: ${score}`);
             
             // Flash effect
-            this.setAttribute('material', 'color', 'red');
+            this.setAttribute('material', 'color', 'green');
             setTimeout(() => {
-                this.setAttribute('material', 'color', 'brown');
+                this.setAttribute('material', 'color', 'yellow');
             }, 200);
             
             hideMole(this);
@@ -400,6 +400,7 @@
     </script>
 </body>
 </html>
+
 
 
 
